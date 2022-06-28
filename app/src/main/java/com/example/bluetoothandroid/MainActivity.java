@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         btDevicesList = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
 
+
         btSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
