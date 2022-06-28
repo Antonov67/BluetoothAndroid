@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,14 +37,26 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+
+    public BluetoothDevice getItem(int position) {
+        return bluetoothDevices.get(position);
+    }
+
     @SuppressLint("MissingPermission")
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         BluetoothDevice bluetoothDevice = bluetoothDevices.get(position);
         if (bluetoothDevice != null){
             holder.nameDevice.setText(bluetoothDevice.getName());
             holder.macDevice.setText(bluetoothDevice.getAddress());
             holder.deviceIcon.setImageResource(iconType);
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context.getApplicationContext(),getItem(position).getName(),Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
     }
 

@@ -4,14 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +27,9 @@ import android.widget.Toast;
 
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
 
+    private Adapter listAdapter;
+
+    ArrayList<BluetoothDevice> bluetoothDevices;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +59,12 @@ public class MainActivity extends AppCompatActivity {
         btSwitch = findViewById(R.id.btSwitch);
         progressBar = findViewById(R.id.progressBar);
         searchButton = findViewById(R.id.searchButton);
+
         btDevicesList = findViewById(R.id.recyclerView);
+        btDevicesList.setLayoutManager(new LinearLayoutManager(this));
+        btDevicesList.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+
+        bluetoothDevices = new ArrayList<>();
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
@@ -59,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         if (bluetoothAdapter.isEnabled()) {
             showSetupFrame();
             btSwitch.setChecked(true);
+            setListAdapter(100);
         }
 
 
@@ -83,22 +100,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btDevicesList.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                return false;
-            }
 
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-            }
-        });
 
     }
 
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQ_ENABLE_CODE) {
             if (resultCode == RESULT_OK && bluetoothAdapter.isEnabled()) {
                 showSetupFrame();
+                setListAdapter(100);
             } else if (resultCode == RESULT_CANCELED) {
                 blEnable(true);
             }
@@ -132,6 +135,36 @@ public class MainActivity extends AppCompatActivity {
         } else {
             bluetoothAdapter.disable();
         }
+    }
+
+    private void setListAdapter(int type){
+        bluetoothDevices.clear();
+        switch (type){
+            case 100:
+                bluetoothDevices = getBoundedBtDevices();
+                //Log.d("777", bluetoothDevices.toString());
+                listAdapter = new Adapter(bluetoothDevices,this, R.drawable.ic_bluetooth_green);
+                break;
+            case 200:
+                listAdapter = new Adapter(bluetoothDevices,this, R.drawable.ic_bluetooth_red);
+                break;
+        }
+
+        btDevicesList.setAdapter(listAdapter);
+    }
+
+    @SuppressLint("MissingPermission")
+    private ArrayList<BluetoothDevice> getBoundedBtDevices(){
+       @SuppressLint("MissingPermission") Set<BluetoothDevice> deviceSet = bluetoothAdapter.getBondedDevices();
+        ArrayList<BluetoothDevice> tmpArrayList = new ArrayList<>();
+        Log.d("777", deviceSet.size() + "");
+        if (deviceSet.size() > 0){
+            for (BluetoothDevice device: deviceSet) {
+                Log.d("777", device.getName());
+                tmpArrayList.add(device);
+            }
+        }
+        return tmpArrayList;
     }
 
 }
