@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">BluetoothAndroid</string>
-    <string name="bluetooth_off">Bluetooth off</string>
+    <string name="bluetooth_off_text">Bluetooth off</string>
     <string name="switch_text">Bluetooth on/off</string>
 </resources>

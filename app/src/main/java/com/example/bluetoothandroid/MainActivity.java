@@ -12,7 +12,8 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Switch;
+
+
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout messageFrame;
     private LinearLayout setupFrame;
 
-    private Switch btSwitch;
+    private SwitchMaterial btSwitch;
     private Button searchButton;
     private ProgressBar progressBar;
     private RecyclerView btDevicesList;
@@ -38,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         searchButton = findViewById(R.id.searchButton);
         btDevicesList = findViewById(R.id.recyclerView);
-        progressBar = findViewById(R.id.progressBar);
 
 
         btSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -55,23 +55,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btDevicesList.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-            }
-        });
-
     }
     void showMessageFrame(){
         messageFrame.setVisibility(View.VISIBLE);
@@ -82,7 +65,5 @@ public class MainActivity extends AppCompatActivity {
         messageFrame.setVisibility(View.GONE);
         setupFrame.setVisibility(View.VISIBLE);
     }
-
-
 
 }

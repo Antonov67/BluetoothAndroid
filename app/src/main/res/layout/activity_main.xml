@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="25sp"
-            android:text="@string/bluetooth_off" />
+            android:text="@string/bluetooth_off_text" />
     </FrameLayout>
 
     <LinearLayout
