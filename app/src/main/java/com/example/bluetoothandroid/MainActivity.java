@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -24,6 +25,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -32,6 +34,7 @@ import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -66,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
     ArrayList<BluetoothDevice> bluetoothDevices;
 
+    private EditText consoleField;
+
+    private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +96,14 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
         btDevicesList.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
 
         bluetoothDevices = new ArrayList<>();
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle("Соединение...");
+        progressDialog.setMessage("Ждите...");
+
+        consoleField = findViewById(R.id.consoleField);
+
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -326,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
             try {
                 method = bluetoothDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
                 bluetoothSocket = (BluetoothSocket) method.invoke(bluetoothDevice, 1);
+                progressDialog.show();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -337,11 +353,14 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
             try {
                 bluetoothSocket.connect();
                 isSuccess = true;
+
+                progressDialog.dismiss();
             } catch (IOException e) {
                 e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        progressDialog.dismiss();
                         Toast.makeText(MainActivity.this, "Не могу соедениться!", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -386,6 +405,8 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
         private final InputStream inputStream;
         private final OutputStream outputStream;
 
+        private boolean isConnected = false;
+
         public ConnectedThread(BluetoothSocket bluetoothSocket) {
 
             InputStream inputStream = null;
@@ -405,6 +426,37 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
         @Override
         public void run() {
 
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            StringBuffer buffer = new StringBuffer();
+            StringBuffer stringBufferConsole = new StringBuffer();
+
+            while (isConnected){
+                try {
+                    int bytes = bufferedInputStream.read();
+                    buffer.append((char) bytes);
+                    int eof = buffer.indexOf("\r\n");
+                    if (eof > 0){
+                        stringBufferConsole.append(buffer.toString());
+                        buffer.delete(0, buffer.length());
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                consoleField.setText(stringBufferConsole.toString());
+                            }
+                        });
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            try {
+                bufferedInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
         }
 
         public void write(String command){
@@ -421,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
         public void cancel(){
             try {
+                isConnected = false;
                 inputStream.close();
                 outputStream.close();
             } catch (IOException e) {
