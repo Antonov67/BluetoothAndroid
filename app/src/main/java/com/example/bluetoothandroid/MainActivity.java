@@ -33,6 +33,8 @@ import android.widget.Toast;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Set;
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
 
     private Adapter listAdapter;
+
+    protected ConnectThread connectThread;
+    private ConnectedThread connectedThread;
 
     ArrayList<BluetoothDevice> bluetoothDevices;
 
@@ -114,7 +119,15 @@ public class MainActivity extends AppCompatActivity {
         disconectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (connectedThread != null){
+                    connectedThread.cancel();
+                }
 
+                if (connectThread != null){
+                    connectThread.cancel();
+                }
+
+                showSetupFrame();
             }
         });
 
@@ -143,6 +156,23 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(receiver);
+         if (connectedThread != null){
+             connectedThread.cancel();
+         }
+        if (connectThread != null){
+            connectThread.cancel();
+        }
+
+
+
     }
 
     @Override
@@ -161,11 +191,19 @@ public class MainActivity extends AppCompatActivity {
     void showMessageFrame() {
         messageFrame.setVisibility(View.VISIBLE);
         setupFrame.setVisibility(View.GONE);
+        ledFrame.setVisibility(View.GONE);
     }
 
     void showSetupFrame() {
         messageFrame.setVisibility(View.GONE);
         setupFrame.setVisibility(View.VISIBLE);
+        ledFrame.setVisibility(View.GONE);
+    }
+
+    void showLedFrame() {
+        ledFrame.setVisibility(View.VISIBLE);
+        messageFrame.setVisibility(View.GONE);
+        setupFrame.setVisibility(View.GONE);
     }
 
     @SuppressLint("MissingPermission")
@@ -277,9 +315,17 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 cancel();
+            }
+
+            if (isSuccess){
+
+                connectedThread = new ConnectedThread(bluetoothSocket);
+                connectedThread.start();
+                showLedFrame();
 
 
             }
+
         }
 
         public void cancel(){
@@ -290,6 +336,56 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    private class ConnectedThread extends Thread{
+
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
+
+        public ConnectedThread(BluetoothSocket bluetoothSocket) {
+
+            InputStream inputStream = null;
+            OutputStream outputStream = null;
+
+            try {
+                inputStream = bluetoothSocket.getInputStream();
+                outputStream = bluetoothSocket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
+        }
+
+        @Override
+        public void run() {
+
+        }
+
+        public void write(String command){
+            byte[] bytes = command.getBytes();
+            if (outputStream != null){
+                try {
+                    outputStream.write(bytes);
+                    outputStream.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void cancel(){
+            try {
+                inputStream.close();
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ;
+
+        }
     }
 
 }
