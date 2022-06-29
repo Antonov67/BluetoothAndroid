@@ -116,9 +116,11 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
         ledSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                ledOnOff(isChecked);
             }
         });
+
+
 
 
 
@@ -162,6 +164,17 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
 
 
+
+    }
+
+    private void ledOnOff(boolean isChecked){
+
+        if (connectedThread != null && connectThread.isConnect()){
+            String command = "";
+            command = (isChecked) ? "1" : "0";
+            connectedThread.write(command);
+
+        }
 
     }
 
@@ -354,6 +367,10 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
         }
 
+        public boolean isConnect(){
+            return bluetoothSocket.isConnected();
+        }
+
         public void cancel(){
             try {
                 bluetoothSocket.close();
@@ -409,9 +426,9 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ;
-
         }
+
+
     }
 
 }
