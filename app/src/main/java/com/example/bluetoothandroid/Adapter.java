@@ -23,6 +23,9 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private Context context;
     private int iconType;
 
+    private ItemClickListener mClickListener;
+
+
     public Adapter(ArrayList<BluetoothDevice> bluetoothDevices, Context context, int iconType) {
         this.bluetoothDevices = bluetoothDevices;
         this.context = context;
@@ -53,6 +56,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
                     Toast.makeText(context.getApplicationContext(),getItem(position).getName(),Toast.LENGTH_SHORT).show();
                 }
             });
@@ -60,12 +64,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         }
     }
 
+
     @Override
     public int getItemCount() {
         return bluetoothDevices.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         TextView nameDevice, macDevice;
         ImageView deviceIcon;
@@ -76,6 +81,22 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             nameDevice = itemView.findViewById(R.id.nameDeviceText);
             macDevice = itemView.findViewById(R.id.macDeviceText);
             deviceIcon = itemView.findViewById(R.id.btDeviceIcon);
+            itemView.setOnClickListener(this);
         }
+
+
+        @Override
+        public void onClick(View view) {
+            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+        }
+    }
+
+
+    void setClickListener(ItemClickListener itemClickListener) {
+        this.mClickListener = itemClickListener;
+    }
+
+    public interface ItemClickListener {
+        void onItemClick(View view, int position);
     }
 }

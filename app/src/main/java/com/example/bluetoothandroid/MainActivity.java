@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements  Adapter.ItemClickListener{
 
     private static final int REQ_ENABLE_CODE = 7;
     private FrameLayout messageFrame;
@@ -97,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
 
         registerReceiver(receiver, filter);
 
+
+
+
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Toast.makeText(getApplicationContext(), " модуль Bluetooth не найден", Toast.LENGTH_LONG).show();
@@ -115,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
 
         disconectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        listAdapter.setClickListener(this);
         btDevicesList.setAdapter(listAdapter);
     }
 
@@ -283,6 +290,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onItemClick(View view, int position) {
+        BluetoothDevice device = bluetoothDevices.get(position);
+        Log.d("777", "выбрано устройство");
+        if (device != null) {
+            Log.d("777", device.getName());
+            connectThread = new ConnectThread(device);
+            connectThread.start();
+        }
+    }
+
     //класс для соединения с блютуз устройством
     private class ConnectThread extends Thread{
 
@@ -321,7 +340,14 @@ public class MainActivity extends AppCompatActivity {
 
                 connectedThread = new ConnectedThread(bluetoothSocket);
                 connectedThread.start();
-                showLedFrame();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showLedFrame();
+                    }
+                });
+
 
 
             }
