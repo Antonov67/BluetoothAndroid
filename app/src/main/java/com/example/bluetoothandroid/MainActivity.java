@@ -12,7 +12,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -66,6 +69,13 @@ public class MainActivity extends AppCompatActivity {
 
         bluetoothDevices = new ArrayList<>();
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+
+        registerReceiver(receiver, filter);
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Toast.makeText(getApplicationContext(), " модуль Bluetooth не найден", Toast.LENGTH_LONG).show();
@@ -96,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startSearchBtDevice();
             }
         });
 
@@ -166,5 +176,42 @@ public class MainActivity extends AppCompatActivity {
         }
         return tmpArrayList;
     }
+
+    @SuppressLint("MissingPermission")
+    private void startSearchBtDevice(){
+        if (bluetoothAdapter.isDiscovering()){
+            bluetoothAdapter.cancelDiscovery();
+        }else {
+            bluetoothAdapter.startDiscovery();
+        }
+
+    }
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            switch (action){
+                case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                    searchButton.setText("остановить поиск");
+                    progressBar.setVisibility(View.VISIBLE);
+                    setListAdapter(200);
+                    break;
+                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                    searchButton.setText("начать поиск");
+                    progressBar.setVisibility(View.GONE);
+                    break;
+                case BluetoothDevice.ACTION_FOUND:
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (device != null){
+                        bluetoothDevices.add(device);
+                        listAdapter.notifyDataSetChanged();
+                    }
+                    break;
+            }
+        }
+    };
 
 }
