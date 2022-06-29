@@ -12,6 +12,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,17 +32,26 @@ import android.widget.Toast;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQ_ENABLE_CODE = 7;
     private FrameLayout messageFrame;
     private LinearLayout setupFrame;
+    private LinearLayout ledFrame;
+
 
     private SwitchMaterial btSwitch;
+    private SwitchMaterial ledSwitch;
+
     private Button searchButton;
+    private Button disconectButton;
+
     private ProgressBar progressBar;
     private RecyclerView btDevicesList;
 
@@ -59,9 +69,15 @@ public class MainActivity extends AppCompatActivity {
 
         messageFrame = findViewById(R.id.messageFrame);
         setupFrame = findViewById(R.id.setupFrame);
+        ledFrame = findViewById(R.id.ledLayout);
+
         btSwitch = findViewById(R.id.btSwitch);
+        ledSwitch = findViewById(R.id.onOffLed);
+
         progressBar = findViewById(R.id.progressBar);
+
         searchButton = findViewById(R.id.searchButton);
+        disconectButton = findViewById(R.id.disconectButton);
 
         btDevicesList = findViewById(R.id.recyclerView);
         btDevicesList.setLayoutManager(new LinearLayoutManager(this));
@@ -87,6 +103,21 @@ public class MainActivity extends AppCompatActivity {
             btSwitch.setChecked(true);
             setListAdapter(100);
         }
+
+        ledSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            }
+        });
+
+        disconectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
 
 
         btSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -213,5 +244,52 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    //класс для соединения с блютуз устройством
+    private class ConnectThread extends Thread{
+
+        private BluetoothSocket bluetoothSocket = null;
+        private boolean isSuccess = false;
+
+        public ConnectThread(BluetoothDevice bluetoothDevice) {
+            Method method = null;
+            try {
+                method = bluetoothDevice.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
+                bluetoothSocket = (BluetoothSocket) method.invoke(bluetoothDevice, 1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public void run() {
+            try {
+                bluetoothSocket.connect();
+                isSuccess = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "Не могу соедениться!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                cancel();
+
+
+            }
+        }
+
+        public void cancel(){
+            try {
+                bluetoothSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
 }
