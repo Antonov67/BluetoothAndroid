@@ -53,14 +53,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
             holder.nameDevice.setText(bluetoothDevice.getName());
             holder.macDevice.setText(bluetoothDevice.getAddress());
             holder.deviceIcon.setImageResource(iconType);
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    Toast.makeText(context.getApplicationContext(),getItem(position).getName(),Toast.LENGTH_SHORT).show();
-                }
-            });
-
         }
     }
 
