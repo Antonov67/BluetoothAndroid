@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -421,6 +422,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
             this.inputStream = inputStream;
             this.outputStream = outputStream;
+            isConnected = true;
         }
 
         @Override
@@ -436,13 +438,14 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
                     buffer.append((char) bytes);
                     int eof = buffer.indexOf("\r\n");
                     if (eof > 0){
-                        stringBufferConsole.append(buffer.toString());
+                        stringBufferConsole.append(buffer);
                         buffer.delete(0, buffer.length());
 
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 consoleField.setText(stringBufferConsole.toString());
+                                consoleField.setMovementMethod(new ScrollingMovementMethod());
                             }
                         });
                     }
