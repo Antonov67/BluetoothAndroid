@@ -75,6 +75,7 @@
             android:lines="4"
             android:scrollbars="vertical"
             android:editable="false"
+            android:gravity="bottom"
             android:text="" />
 
         <Button
