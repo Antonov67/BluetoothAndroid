@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
         if (connectedThread != null && connectThread.isConnect()){
             String command = "";
-            command = (isChecked) ? "1" : "0";
+            command = (isChecked) ? "1*" : "0*";
             connectedThread.write(command);
 
         }
