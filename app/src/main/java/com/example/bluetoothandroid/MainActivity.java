@@ -179,8 +179,6 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
         });
 
 
-
-
     }
 
     private void ledOnOff(boolean isChecked){
@@ -362,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
                     @Override
                     public void run() {
                         progressDialog.dismiss();
-                        Toast.makeText(MainActivity.this, "Не могу соедениться!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Не могу соединиться!", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -401,6 +399,7 @@ public class MainActivity extends AppCompatActivity implements  Adapter.ItemClic
 
     }
 
+    //класс для обмена данными с блютуз устройством
     private class ConnectedThread extends Thread{
 
         private final InputStream inputStream;
